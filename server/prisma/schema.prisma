@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String     @id @default(uuid())
+  email            String     @unique
+  passwordHash     String
+  displayName      String
+  createdAt        DateTime   @default(now())
+  twoFactorEnabled Boolean    @default(false)
+  twoFactorSecret  String?
+  auditLogs        AuditLog[]
+  listings         Listing[]
+}
+
+model Listing {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  category    String
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  target    String
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model FailedLogin {
+  id        String   @id @default(uuid())
+  email     String
+  ipAddress String
+  timestamp DateTime @default(now())
+}
